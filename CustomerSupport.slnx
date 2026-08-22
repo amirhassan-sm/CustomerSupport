@@ -1,0 +1,21 @@
+<Solution>
+  <Folder Name="/Application/">
+    <Project Path="Applicatio.Freamwork/Applicatio.Freamwork.csproj" Id="bd509748-22fc-4d55-ba8f-33153ef72125" />
+    <Project Path="Application.Contrast/Application.Contrast.csproj" Id="e207aff9-22d1-4775-b253-c2281b48bce9" />
+    <Project Path="Application.Dto/Application.Dto.csproj" Id="15d4f248-ff53-4ebe-aad6-caf2ce361c12" />
+    <Project Path="Application/Application.csproj" Id="65f649e8-88f3-4482-83c2-d3461826f6aa" />
+  </Folder>
+  <Folder Name="/BootStrap/">
+    <Project Path="Customer.Bootstrap/Customer.Bootstrap.csproj" Id="37a38ca9-df7b-497b-a79e-6053ee050607" />
+    <Project Path="Security.Bootstrap/Security.Bootstrap.csproj" Id="649b852b-be44-42f6-bb82-76b0595042a4" />
+  </Folder>
+  <Folder Name="/Domain/">
+    <Project Path="Customer.DomainServiceContract/Customer.DomainServiceContract.csproj" Id="2639ecbe-b376-4c50-94a7-4f42102b416d" />
+    <Project Path="Domain.Customer/Domain.Customer.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="Infrastructure.Customer.Persistance/Infrastructure.Customer.Persistance.csproj" Id="873a8dc2-d81c-43e9-abdc-6dc66fd4b0b0" />
+    <Project Path="Infrastructure.Security.Identity/Infrastructure.Security.Identity.csproj" Id="34104769-2450-4d31-998b-cb0aa7dc639a" />
+  </Folder>
+  <Project Path="CustomerSupport/CustomerSupport.csproj" />
+</Solution>

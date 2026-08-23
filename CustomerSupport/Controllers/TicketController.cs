@@ -61,9 +61,24 @@ namespace CustomerSupport.Controllers
         }
 
         [HttpGet("by-customer/{customerId:int}")]
-        [Authorize(Policy = AppPolicies.Staff)]
+        [Authorize(Policy = AppPolicies.TicketAccess)]
         public async Task<IActionResult> GetByCustomerId(int customerId)
         {
+            if (IsCustomerOnly())
+            {
+                var linkedCustomerId = GetLinkedCustomerId();
+                if (linkedCustomerId is null)
+                {
+                    return BadRequest(new
+                    {
+                        message = "This account is not linked to a customer record."
+                    });
+                }
+
+                if (customerId != linkedCustomerId.Value)
+                    return NotFound();
+            }
+
             var result = await _ticketServices.GetByCustomerIdAsync(customerId);
             return FromResult(result);
         }

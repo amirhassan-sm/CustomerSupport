@@ -142,6 +142,94 @@ namespace Application.Implementation
                 Map(customer));
         }
 
+        public async Task<GenericOperationResult<int>> ResolveOrCreateAccountCustomerAsync(
+            CustomerAccountLinkDto model,
+            bool createIfMissing = true)
+        {
+            if (model is null || string.IsNullOrWhiteSpace(model.Email))
+            {
+                return Fail<int>(
+                    "Customer email is required.",
+                    "INVALID_INPUT",
+                    HttpStatusCode.BadRequest,
+                    "Email cannot be empty.");
+            }
+
+            var email = NormalizeEmail(model.Email);
+
+            if (model.CustomerId.HasValue)
+            {
+                if (model.CustomerId.Value <= 0)
+                {
+                    return Fail<int>(
+                        "Invalid customer id.",
+                        "INVALID_ID",
+                        HttpStatusCode.BadRequest,
+                        "Customer id must be greater than zero.");
+                }
+
+                var byId = await repo.GetByIdAsync(model.CustomerId.Value);
+                if (byId is null)
+                    return NotFound<int>(model.CustomerId.Value);
+
+                if (!string.Equals(byId.Email, email, StringComparison.OrdinalIgnoreCase))
+                {
+                    return GenericOperationResult<int>.ToFail(
+                        byId.CustomerId,
+                        "Customer email does not match.",
+                        new List<string> { "The supplied customer id does not belong to this email." },
+                        "EMAIL_MISMATCH",
+                        HttpStatusCode.BadRequest);
+                }
+
+                return GenericOperationResult<int>.ToSuccess(
+                    byId.CustomerId,
+                    "Customer linked successfully.",
+                    byId.CustomerId);
+            }
+
+            var existing = await repo.GetByEmailAsync(email);
+            if (existing is not null)
+            {
+                return GenericOperationResult<int>.ToSuccess(
+                    existing.CustomerId,
+                    "Customer linked successfully.",
+                    existing.CustomerId);
+            }
+
+            if (!createIfMissing)
+            {
+                return GenericOperationResult<int>.ToFail(
+                    "Customer not found.",
+                    new List<string> { $"No customer found with email '{email}'." },
+                    "NOT_FOUND",
+                    HttpStatusCode.NotFound);
+            }
+
+            var created = await CreateAsync(new CustomerCreateDto
+            {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = email,
+                PhoneNumber = model.PhoneNumber,
+                Type = CustomerType.Individual
+            });
+
+            if (!created.Success || created.Item is null)
+            {
+                return GenericOperationResult<int>.ToFail(
+                    created.Message,
+                    created.Errors,
+                    created.ErrorCode,
+                    created.statusCode ?? HttpStatusCode.BadRequest);
+            }
+
+            return GenericOperationResult<int>.ToSuccess(
+                created.Item.CustomerId,
+                "Customer created successfully.",
+                created.Item.CustomerId);
+        }
+
         public async Task<GenericOperationResult<CustomerResultDto>> UpdateAsync(int id, CustomerUpdateDto model)
         {
             if (id <= 0)

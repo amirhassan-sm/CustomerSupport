@@ -20,6 +20,10 @@ namespace Application.Contrast.Services
 
         Task<GenericOperationResult<CustomerResultDto>> CreateAsync(CustomerCreateDto model);
 
+        Task<GenericOperationResult<int>> ResolveOrCreateAccountCustomerAsync(
+            CustomerAccountLinkDto model,
+            bool createIfMissing = true);
+
         Task<GenericOperationResult<CustomerResultDto>> UpdateAsync(
             int id,
             CustomerUpdateDto model);

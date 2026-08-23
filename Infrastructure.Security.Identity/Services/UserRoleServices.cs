@@ -1,5 +1,7 @@
 using Applicatio.Freamwork.OperationResult;
+using Application.Contrast.Authorization;
 using Application.Contrast.Services;
+using Application.Dto.Customer;
 using Application.Dto.Security;
 using Infrastructure.Security.Identity.Models;
 using Microsoft.AspNetCore.Identity;
@@ -12,15 +14,18 @@ namespace Infrastructure.Security.Identity.Services
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<ApplicationRole> roleManager;
+        private readonly ICustomerServices customerServices;
         private readonly ILogger<UserRoleServices> logger;
 
         public UserRoleServices(
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
+            ICustomerServices customerServices,
             ILogger<UserRoleServices> logger)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
+            this.customerServices = customerServices;
             this.logger = logger;
         }
 
@@ -47,6 +52,14 @@ namespace Infrastructure.Security.Identity.Services
                         new List<string> { "User already has this role." },
                         "ROLE_ALREADY_ASSIGNED",
                         HttpStatusCode.Conflict);
+                }
+
+                if (string.Equals(roleName, AppRoles.Customer, StringComparison.OrdinalIgnoreCase)
+                    && !user.CustomerId.HasValue)
+                {
+                    var link = await LinkCustomerForRoleAsync(user);
+                    if (link is not null)
+                        return link;
                 }
 
                 var result = await userManager.AddToRoleAsync(user, roleName);
@@ -196,6 +209,40 @@ namespace Infrastructure.Security.Identity.Services
                     "EXCEPTION_OCCURRED",
                     HttpStatusCode.InternalServerError);
             }
+        }
+
+        private async Task<OperationResult?> LinkCustomerForRoleAsync(ApplicationUser user)
+        {
+            var link = await customerServices.ResolveOrCreateAccountCustomerAsync(
+                new CustomerAccountLinkDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email ?? string.Empty,
+                    PhoneNumber = user.PhoneNumber ?? string.Empty
+                });
+
+            if (!link.Success)
+            {
+                return OperationResult.ToFail(
+                    "Failed to link customer account.",
+                    link.Errors,
+                    link.ErrorCode ?? "CUSTOMER_LINK_FAILED",
+                    link.statusCode ?? HttpStatusCode.BadRequest);
+            }
+
+            user.CustomerId = link.Item;
+            var update = await userManager.UpdateAsync(user);
+            if (!update.Succeeded)
+            {
+                return OperationResult.ToFail(
+                    "Failed to link customer account.",
+                    update.Errors.Select(x => x.Description).ToList(),
+                    "CUSTOMER_LINK_FAILED",
+                    HttpStatusCode.BadRequest);
+            }
+
+            return null;
         }
 
         private async Task<ApplicationUser?> FindActiveUserAsync(string userId)

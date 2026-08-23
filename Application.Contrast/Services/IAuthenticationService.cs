@@ -11,6 +11,6 @@ namespace Application.Contrast.Services
 
         Task<GenericOperationResult<TokenResult>> RefreshAsync(RefreshTokenDto dto);
 
-        Task<OperationResult> LogoutAsync(RefreshTokenDto dto);
+        Task<OperationResult> LogoutAsync(RefreshTokenDto dto, string? accessToken = null);
     }
 }

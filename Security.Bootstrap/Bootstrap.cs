@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
@@ -69,6 +70,18 @@ namespace Security.Bootstrap
                 };
                 options.Events = new JwtBearerEvents
                 {
+                    OnTokenValidated = async context =>
+                    {
+                        var jti = context.Principal?.FindFirst(JwtRegisteredClaimNames.Jti)?.Value;
+                        if (string.IsNullOrWhiteSpace(jti))
+                            return;
+
+                        var blacklist = context.HttpContext.RequestServices
+                            .GetRequiredService<ITokenBlacklist>();
+
+                        if (await blacklist.IsRevokedAsync(jti))
+                            context.Fail("This token has been revoked.");
+                    },
                     OnAuthenticationFailed = context =>
                     {
                         Console.WriteLine($"[JWT] Authentication failed: {context.Exception.Message}");
@@ -94,10 +107,18 @@ namespace Security.Bootstrap
                     policy.RequireRole(AppRoles.Admin, AppRoles.Agent, AppRoles.Customer));
             });
             services.AddScoped<IGenerateToken, GenerateToken>();
+            services.AddSingleton<ITokenBlacklist, DistributedTokenBlacklist>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserRoleServices, UserRoleServices>();
             services.AddScoped<IUserSevices, UserServices>();
+        }
+
+        public static async Task MigrateSecurityDatabaseAsync(this IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<SecurityContext>();
+            await db.Database.MigrateAsync();
         }
 
         public static async Task SeedIdentityAsync(this IServiceProvider services)

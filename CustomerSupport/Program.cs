@@ -20,6 +20,20 @@ var audience = builder.Configuration["jwt:Audience"]
 builder.Services.WierUpCustomerSystem(customerConnectionString);
 builder.Services.WireUpSecuritySystem(securityConnectionString, secretKey, issuer, audience);
 
+var redisConnection = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnection))
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "customersupport:";
+    });
+}
+else
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -60,6 +74,7 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
+await WaitForDatabasesAsync(app.Services);
 await app.Services.SeedIdentityAsync();
 
 if (app.Environment.IsDevelopment())
@@ -72,7 +87,8 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+if (!app.Configuration.GetValue("DisableHttpsRedirection", false))
+    app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -80,3 +96,23 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+static async Task WaitForDatabasesAsync(IServiceProvider services)
+{
+    const int maxAttempts = 20;
+
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await services.MigrateCustomerDatabaseAsync();
+            await services.MigrateSecurityDatabaseAsync();
+            return;
+        }
+        catch (Exception ex) when (attempt < maxAttempts)
+        {
+            Console.WriteLine($"Waiting for SQL Server ({attempt}/{maxAttempts}): {ex.Message}");
+            await Task.Delay(TimeSpan.FromSeconds(3));
+        }
+    }
+}

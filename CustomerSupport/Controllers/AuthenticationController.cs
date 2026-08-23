@@ -43,8 +43,21 @@ namespace CustomerSupport.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] RefreshTokenDto model)
         {
-            var result = await _authenticationService.LogoutAsync(model);
+            var result = await _authenticationService.LogoutAsync(model, ReadBearerToken());
             return FromResult(result);
+        }
+
+        private string? ReadBearerToken()
+        {
+            var header = Request.Headers.Authorization.ToString();
+            if (string.IsNullOrWhiteSpace(header))
+                return null;
+
+            const string prefix = "Bearer ";
+            if (header.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                return header[prefix.Length..].Trim();
+
+            return null;
         }
 
         private IActionResult FromResult(OperationResult result)

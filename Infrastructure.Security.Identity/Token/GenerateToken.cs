@@ -34,6 +34,7 @@ namespace Infrastructure.Security.Identity.Token
 
             var claims = new List<Claim>
             {
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Name, userName),
                 new("firstName", firstName),

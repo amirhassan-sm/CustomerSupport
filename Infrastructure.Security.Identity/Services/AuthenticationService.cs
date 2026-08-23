@@ -1,11 +1,13 @@
 using Applicatio.Freamwork.OperationResult;
 using Application.Contrast.Authorization;
 using Application.Contrast.Services;
+using Application.Dto.Customer;
 using Application.Dto.Security;
 using Infrastructure.Security.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 
 namespace Infrastructure.Security.Identity.Services
@@ -16,18 +18,24 @@ namespace Infrastructure.Security.Identity.Services
 
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<ApplicationRole> roleManager;
+        private readonly ICustomerServices customerServices;
         private readonly IGenerateToken generateToken;
+        private readonly ITokenBlacklist tokenBlacklist;
         private readonly ILogger<AuthenticationService> logger;
 
         public AuthenticationService(
             UserManager<ApplicationUser> userManager,
             RoleManager<ApplicationRole> roleManager,
+            ICustomerServices customerServices,
             IGenerateToken generateToken,
+            ITokenBlacklist tokenBlacklist,
             ILogger<AuthenticationService> logger)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
+            this.customerServices = customerServices;
             this.generateToken = generateToken;
+            this.tokenBlacklist = tokenBlacklist;
             this.logger = logger;
         }
 
@@ -57,6 +65,8 @@ namespace Infrastructure.Security.Identity.Services
                         HttpStatusCode.Unauthorized);
                 }
 
+                await TryLinkExistingCustomerAsync(user);
+
                 return await IssueTokensAsync(user, "Login succeeded.");
             }
             catch (Exception ex)
@@ -79,13 +89,33 @@ namespace Infrastructure.Security.Identity.Services
 
             try
             {
+                var customerResult = await customerServices.ResolveOrCreateAccountCustomerAsync(
+                    new CustomerAccountLinkDto
+                    {
+                        FirstName = dto.FirstName,
+                        LastName = dto.LastName,
+                        Email = dto.Email,
+                        PhoneNumber = dto.PhoneNumber,
+                        CustomerId = dto.CustomerId
+                    });
+
+                if (!customerResult.Success)
+                {
+                    return OperationResult.ToFail(
+                        customerResult.Message,
+                        customerResult.Errors,
+                        customerResult.ErrorCode ?? "SIGNUP_FAILED",
+                        customerResult.statusCode ?? HttpStatusCode.BadRequest);
+                }
+
                 var user = new ApplicationUser
                 {
                     UserName = dto.UserName.Trim(),
                     Email = dto.Email.Trim(),
+                    PhoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber) ? null : dto.PhoneNumber.Trim(),
                     FirstName = dto.FirstName.Trim(),
                     LastName = dto.LastName.Trim(),
-                    CustomerId = dto.CustomerId,
+                    CustomerId = customerResult.Item,
                     CreatedAt = DateTime.UtcNow,
                     IsDeleted = false
                 };
@@ -155,7 +185,7 @@ namespace Infrastructure.Security.Identity.Services
             }
         }
 
-        public async Task<OperationResult> LogoutAsync(RefreshTokenDto dto)
+        public async Task<OperationResult> LogoutAsync(RefreshTokenDto dto, string? accessToken = null)
         {
             if (dto is null || string.IsNullOrWhiteSpace(dto.RefreshToken))
             {
@@ -168,6 +198,8 @@ namespace Infrastructure.Security.Identity.Services
 
             try
             {
+                await RevokeAccessTokenAsync(accessToken);
+
                 var user = await userManager.Users
                     .FirstOrDefaultAsync(x => x.RefreshToken == dto.RefreshToken);
 
@@ -185,6 +217,52 @@ namespace Infrastructure.Security.Identity.Services
                 logger.LogError(ex, "Logout failed.");
                 return UnexpectedOperation("Logout failed.");
             }
+        }
+
+        private async Task RevokeAccessTokenAsync(string? accessToken)
+        {
+            if (string.IsNullOrWhiteSpace(accessToken))
+                return;
+
+            try
+            {
+                var jwt = new JwtSecurityTokenHandler().ReadJwtToken(accessToken);
+                var jti = jwt.Id;
+                if (string.IsNullOrWhiteSpace(jti))
+                    jti = jwt.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti)?.Value;
+
+                var timeToLive = jwt.ValidTo - DateTime.UtcNow;
+                if (!string.IsNullOrWhiteSpace(jti) && timeToLive > TimeSpan.Zero)
+                    await tokenBlacklist.RevokeAsync(jti, timeToLive);
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Could not revoke access token on logout.");
+            }
+        }
+
+        private async Task TryLinkExistingCustomerAsync(ApplicationUser user)
+        {
+            if (user.CustomerId.HasValue || string.IsNullOrWhiteSpace(user.Email))
+                return;
+
+            var link = await customerServices.ResolveOrCreateAccountCustomerAsync(
+                new CustomerAccountLinkDto
+                {
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    PhoneNumber = user.PhoneNumber ?? string.Empty
+                },
+                createIfMissing: false);
+
+            if (!link.Success)
+                return;
+
+            user.CustomerId = link.Item;
+            var update = await userManager.UpdateAsync(user);
+            if (!update.Succeeded)
+                user.CustomerId = null;
         }
 
         private async Task<GenericOperationResult<TokenResult>> IssueTokensAsync(ApplicationUser user, string message)

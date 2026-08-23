@@ -24,7 +24,13 @@ namespace Customer.Bootstrap
             services.AddValidatorsFromAssemblyContaining<CustomerCreateDtoValidator>();
             services.AddScoped<ICustomerServices, CustomerServices>();
             services.AddScoped<ITicketServices, TicketServices>();
+        }
 
+        public static async Task MigrateCustomerDatabaseAsync(this IServiceProvider services)
+        {
+            using var scope = services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<CustomerContext>();
+            await db.Database.MigrateAsync();
         }
     }
 }

@@ -1,0 +1,61 @@
+# One SQL Server process, two databases (CustomerSupport + CustomerSupportSecurity).
+# Redis is the in-memory store used to revoke JWTs after logout.
+# From this folder: docker compose up --build
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: customersupport-sql
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "CustomerSupport_Dev123!"
+    ports:
+      - "1434:1433"
+    volumes:
+      - sql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/1433' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 25s
+
+  redis:
+    image: redis:7-alpine
+    container_name: customersupport-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customersupport-api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DisableHttpsRedirection: "true"
+      ConnectionStrings__CustomerSupport: "Server=sqlserver,1433;Database=CustomerSupport;User Id=sa;Password=CustomerSupport_Dev123!;TrustServerCertificate=True"
+      ConnectionStrings__Security: "Server=sqlserver,1433;Database=CustomerSupportSecurity;User Id=sa;Password=CustomerSupport_Dev123!;TrustServerCertificate=True"
+      ConnectionStrings__Redis: "redis:6379,abortConnect=false"
+      jwt__SecretKey: "CustomerSupport-local-dev-secret-key-change-this-32+"
+      jwt__Issuer: CustomerSupport
+      jwt__Audience: CustomerSupportClient
+      jwt__DurationInMinutes: "60"
+
+volumes:
+  sql-data:
+  redis-data:

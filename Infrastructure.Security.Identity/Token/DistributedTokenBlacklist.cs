@@ -1,4 +1,4 @@
-using Application.Contrast.Services;
+using Application.Contracts.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 

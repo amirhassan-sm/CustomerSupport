@@ -1,5 +1,5 @@
-using Application.Contrast.Authorization;
-using Application.Contrast.Services;
+using Application.Contracts.Authorization;
+using Application.Contracts.Services;
 using Infrastructure.Security.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +22,7 @@ namespace Infrastructure.Security.Identity.Token
             this.userManager = userManager;
         }
 
-        public async Task<string> GenerateAcsessToken(
+        public async Task<string> GenerateAccessToken(
             string userId,
             string userName,
             string firstName,

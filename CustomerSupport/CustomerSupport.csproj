@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application.Contrast\Application.Contrast.csproj" />
+    <ProjectReference Include="..\Application.Contracts\Application.Contracts.csproj" />
     <ProjectReference Include="..\Application.Dto\Application.Dto.csproj" />
     <ProjectReference Include="..\Customer.Bootstrap\Customer.Bootstrap.csproj" />
     <ProjectReference Include="..\Domain.Customer\Domain.Customer.csproj" />

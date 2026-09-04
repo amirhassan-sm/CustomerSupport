@@ -1,7 +1,7 @@
-﻿using Applicatio.Freamwork.OperationResult;
-using Applicatio.Freamwork.SearchBaseModel;
-using Application.Contrast.QueryServices;
-using Application.Contrast.Services;
+﻿using Application.Framework.OperationResult;
+using Application.Framework.SearchBaseModel;
+using Application.Contracts.QueryServices;
+using Application.Contracts.Services;
 using Application.Dto.Customer;
 using Application.Dto.Ticket;
 using Customer.DomainServiceContract.Services;
@@ -458,7 +458,7 @@ namespace Application.Implementation
                 true);
         }
 
-        public Task<GenericComplexresult<TicketSearchModel, TicketResultDto>> Search(TicketSearchModel sm)
+        public Task<GenericComplexResult<TicketSearchModel, TicketResultDto>> Search(TicketSearchModel sm)
         {
             return queryService.Search(sm);
         }

@@ -1,12 +1,12 @@
-﻿using Application.Contrast.QueryServices;
-using Application.Contrast.Services;
+﻿using Application.Contracts.QueryServices;
+using Application.Contracts.Services;
 using Application.Implementation;
 using Application.Validation;
 using Customer.DomainServiceContract.Services;
 using FluentValidation;
-using Infrastructure.Customer.Persistance;
-using Infrastructure.Customer.Persistance.Query;
-using Infrastructure.Customer.Persistance.Repository;
+using Infrastructure.Customer.Persistence;
+using Infrastructure.Customer.Persistence.Query;
+using Infrastructure.Customer.Persistence.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,7 +14,7 @@ namespace Customer.Bootstrap
 {
     public static class Bootstrap
     {
-        public static void WierUpCustomerSystem(this IServiceCollection services, string CustomerConnectionString)
+        public static void WireUpCustomerSystem(this IServiceCollection services, string CustomerConnectionString)
         {
             services.AddDbContext<CustomerContext>(optionsAction => optionsAction.UseSqlServer(CustomerConnectionString));
             services.AddScoped<ICustomerRepository, CustomerRepository>();

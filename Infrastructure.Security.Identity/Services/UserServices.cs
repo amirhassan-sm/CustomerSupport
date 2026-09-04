@@ -1,6 +1,6 @@
-using Applicatio.Freamwork.OperationResult;
-using Applicatio.Freamwork.SearchBaseModel;
-using Application.Contrast.Services;
+using Application.Framework.OperationResult;
+using Application.Framework.SearchBaseModel;
+using Application.Contracts.Services;
 using Application.Dto.Security;
 using Infrastructure.Security.Identity.Models;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +10,7 @@ using System.Net;
 
 namespace Infrastructure.Security.Identity.Services
 {
-    public class UserServices : IUserSevices
+    public class UserServices : IUserServices
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SecurityContext db;
@@ -133,7 +133,7 @@ namespace Infrastructure.Security.Identity.Services
             }
         }
 
-        public async Task<GenericComplexresult<UserSearchModel, UserProfileDto>> Search(UserSearchModel sm)
+        public async Task<GenericComplexResult<UserSearchModel, UserProfileDto>> Search(UserSearchModel sm)
         {
             sm ??= new UserSearchModel();
 
@@ -186,7 +186,7 @@ namespace Infrastructure.Security.Identity.Services
                     rolesByUser.TryGetValue(user.Id, out var roles) ? roles : new List<string>()))
                 .ToList();
 
-            return new GenericComplexresult<UserSearchModel, UserProfileDto>
+            return new GenericComplexResult<UserSearchModel, UserProfileDto>
             {
                 SearchModel = sm,
                 ListIteams = items

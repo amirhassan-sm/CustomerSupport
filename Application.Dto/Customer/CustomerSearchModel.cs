@@ -1,4 +1,4 @@
-﻿using Applicatio.Freamwork.SearchBaseModel;
+﻿using Application.Framework.SearchBaseModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;

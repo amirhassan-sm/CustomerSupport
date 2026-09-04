@@ -1,4 +1,4 @@
-﻿using Applicatio.Freamwork.SearchBaseModel;
+﻿using Application.Framework.SearchBaseModel;
 using Domain.Customer.Enums;
 
 namespace Application.Dto.Ticket

@@ -17,9 +17,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.csproj" />
-    <ProjectReference Include="..\Application.Contrast\Application.Contrast.csproj" />
+    <ProjectReference Include="..\Application.Contracts\Application.Contracts.csproj" />
     <ProjectReference Include="..\Customer.DomainServiceContract\Customer.DomainServiceContract.csproj" />
-    <ProjectReference Include="..\Infrastructure.Customer.Persistance\Infrastructure.Customer.Persistance.csproj" />
+    <ProjectReference Include="..\Infrastructure.Customer.Persistence\Infrastructure.Customer.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

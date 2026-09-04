@@ -1,7 +1,7 @@
-﻿using Applicatio.Freamwork.OperationResult;
-using Applicatio.Freamwork.SearchBaseModel;
-using Application.Contrast.QueryServices;
-using Application.Contrast.Services;
+﻿using Application.Framework.OperationResult;
+using Application.Framework.SearchBaseModel;
+using Application.Contracts.QueryServices;
+using Application.Contracts.Services;
 using Application.Dto.Customer;
 using Customer.DomainServiceContract.Services;
 using Domain.Customer.Enums;
@@ -365,7 +365,7 @@ namespace Application.Implementation
                 true);
         }
 
-        public Task<GenericComplexresult<CustomerSearchModel, CustomerResultDto>> Search(CustomerSearchModel sm)
+        public Task<GenericComplexResult<CustomerSearchModel, CustomerResultDto>> Search(CustomerSearchModel sm)
         {
             return queryService.Search(sm);
         }

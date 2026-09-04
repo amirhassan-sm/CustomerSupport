@@ -1,4 +1,4 @@
-using Applicatio.Freamwork.SearchBaseModel;
+using Application.Framework.SearchBaseModel;
 
 namespace Application.Dto.Security
 {

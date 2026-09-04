@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Customer.Bootstrap;
+using CustomerSupport.ExceptionHandling;
 using CustomerSupport.Swagger;
 using Microsoft.OpenApi.Models;
 using Security.Bootstrap;
@@ -17,7 +18,7 @@ var issuer = builder.Configuration["jwt:Issuer"]
 var audience = builder.Configuration["jwt:Audience"]
     ?? throw new InvalidOperationException("Configuration value 'jwt:Audience' is missing.");
 
-builder.Services.WierUpCustomerSystem(customerConnectionString);
+builder.Services.WireUpCustomerSystem(customerConnectionString);
 builder.Services.WireUpSecuritySystem(securityConnectionString, secretKey, issuer, audience);
 
 var redisConnection = builder.Configuration.GetConnectionString("Redis");
@@ -33,6 +34,23 @@ else
 {
     builder.Services.AddDistributedMemoryCache();
 }
+
+var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>()
+    ?? ["http://localhost:3000"];
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy.WithOrigins(corsOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -77,6 +95,8 @@ var app = builder.Build();
 await WaitForDatabasesAsync(app.Services);
 await app.Services.SeedIdentityAsync();
 
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -90,6 +110,7 @@ if (app.Environment.IsDevelopment())
 if (!app.Configuration.GetValue("DisableHttpsRedirection", false))
     app.UseHttpsRedirection();
 
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 

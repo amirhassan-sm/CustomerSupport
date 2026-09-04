@@ -1,6 +1,6 @@
-﻿using Applicatio.Freamwork.OperationResult;
-using Application.Contrast.Authorization;
-using Application.Contrast.Services;
+﻿using Application.Framework.OperationResult;
+using Application.Contracts.Authorization;
+using Application.Contracts.Services;
 using Application.Dto.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +14,9 @@ namespace CustomerSupport.Controllers
     [Authorize]
     public class UserManagementController : ControllerBase
     {
-        private readonly IUserSevices _userServices;
+        private readonly IUserServices _userServices;
 
-        public UserManagementController(IUserSevices userServices)
+        public UserManagementController(IUserServices userServices)
         {
             _userServices = userServices;
         }

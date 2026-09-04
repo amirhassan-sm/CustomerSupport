@@ -1,4 +1,4 @@
-using Application.Contrast.Authorization;
+using Application.Contracts.Authorization;
 using Infrastructure.Security.Identity.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;

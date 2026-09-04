@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/Application/">
-    <Project Path="Applicatio.Freamwork/Applicatio.Freamwork.csproj" Id="bd509748-22fc-4d55-ba8f-33153ef72125" />
-    <Project Path="Application.Contrast/Application.Contrast.csproj" Id="e207aff9-22d1-4775-b253-c2281b48bce9" />
+    <Project Path="Application.Framework/Application.Framework.csproj" Id="bd509748-22fc-4d55-ba8f-33153ef72125" />
+    <Project Path="Application.Contracts/Application.Contracts.csproj" Id="e207aff9-22d1-4775-b253-c2281b48bce9" />
     <Project Path="Application.Dto/Application.Dto.csproj" Id="15d4f248-ff53-4ebe-aad6-caf2ce361c12" />
     <Project Path="Application/Application.csproj" Id="65f649e8-88f3-4482-83c2-d3461826f6aa" />
   </Folder>
@@ -14,8 +14,9 @@
     <Project Path="Domain.Customer/Domain.Customer.csproj" />
   </Folder>
   <Folder Name="/Infrastructure/">
-    <Project Path="Infrastructure.Customer.Persistance/Infrastructure.Customer.Persistance.csproj" Id="873a8dc2-d81c-43e9-abdc-6dc66fd4b0b0" />
+    <Project Path="Infrastructure.Customer.Persistence/Infrastructure.Customer.Persistence.csproj" Id="873a8dc2-d81c-43e9-abdc-6dc66fd4b0b0" />
     <Project Path="Infrastructure.Security.Identity/Infrastructure.Security.Identity.csproj" Id="34104769-2450-4d31-998b-cb0aa7dc639a" />
   </Folder>
+  <Project Path="Application.Tests/Application.Tests.csproj" Id="995ff636-fc0e-4302-a088-96d14495ebb8" />
   <Project Path="CustomerSupport/CustomerSupport.csproj" />
 </Solution>

@@ -1,5 +1,5 @@
-﻿using Application.Contrast.Authorization;
-using Application.Contrast.Services;
+﻿using Application.Contracts.Authorization;
+using Application.Contracts.Services;
 using Infrastructure.Security.Identity;
 using Infrastructure.Security.Identity.Models;
 using Infrastructure.Security.Identity.Seed;
@@ -111,7 +111,7 @@ namespace Security.Bootstrap
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserRoleServices, UserRoleServices>();
-            services.AddScoped<IUserSevices, UserServices>();
+            services.AddScoped<IUserServices, UserServices>();
         }
 
         public static async Task MigrateSecurityDatabaseAsync(this IServiceProvider services)

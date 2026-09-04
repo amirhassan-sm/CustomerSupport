@@ -1,6 +1,6 @@
-using Applicatio.Freamwork.OperationResult;
-using Application.Contrast.Authorization;
-using Application.Contrast.Services;
+using Application.Framework.OperationResult;
+using Application.Contracts.Authorization;
+using Application.Contracts.Services;
 using Application.Dto.Customer;
 using Application.Dto.Security;
 using Infrastructure.Security.Identity.Models;
@@ -267,7 +267,7 @@ namespace Infrastructure.Security.Identity.Services
 
         private async Task<GenericOperationResult<TokenResult>> IssueTokensAsync(ApplicationUser user, string message)
         {
-            var accessToken = await generateToken.GenerateAcsessToken(
+            var accessToken = await generateToken.GenerateAccessToken(
                 user.Id,
                 user.UserName ?? string.Empty,
                 user.FirstName,

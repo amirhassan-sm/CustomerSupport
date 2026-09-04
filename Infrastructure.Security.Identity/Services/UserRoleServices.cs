@@ -1,6 +1,6 @@
-using Applicatio.Freamwork.OperationResult;
-using Application.Contrast.Authorization;
-using Application.Contrast.Services;
+using Application.Framework.OperationResult;
+using Application.Contracts.Authorization;
+using Application.Contracts.Services;
 using Application.Dto.Customer;
 using Application.Dto.Security;
 using Infrastructure.Security.Identity.Models;

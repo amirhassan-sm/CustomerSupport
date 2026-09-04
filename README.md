@@ -2,6 +2,10 @@
 
 ASP.NET Core 8 Web API for a customer-support desk: accounts, customers, tickets, assignment, status history, and messages.
 
+This is the backend of a full-stack portfolio project. A companion Next.js frontend (login, signup, dashboard, tickets, customers, users, and roles) is in a separate repository:
+
+**Frontend:** [amirhassan-sm/CustomerSupport-Frontend](https://github.com/amirhassan-sm/CustomerSupport-Frontend)
+
 The API is organized as a layered backend (domain, application, infrastructure, host). Identity lives in its own SQL database. Logout revocation uses Redis when it is configured.
 
 ## Features
@@ -16,6 +20,12 @@ The API is organized as a layered backend (domain, application, infrastructure, 
 - EF Core migrations applied on startup
 - Swagger UI in Development
 - Docker Compose: API + SQL Server + Redis
+
+## Frontend
+
+The UI is a Next.js app in [CustomerSupport-Frontend](https://github.com/amirhassan-sm/CustomerSupport-Frontend). It uses this API for JWT auth and for customers, tickets, users, and roles.
+
+Run the API first (Docker or local), then start the frontend from that repository. Point the frontend at the API base URL (Docker: `http://localhost:8080`, local HTTP: `http://localhost:5125`).
 
 ## Tech stack
 
@@ -35,15 +45,15 @@ The API is organized as a layered backend (domain, application, infrastructure, 
 ```
 CustomerSupport/                  HTTP host, controllers, Swagger, Program.cs
 Application/                      Application services and validators
-Application.Contrast/             Service contracts, roles, policies
+Application.Contracts/            Service contracts, roles, policies
 Application.Dto/                  Request and response models
 Domain.Customer/                  Customer and ticket entities and enums
 Customer.DomainServiceContract/   Repository contracts
-Infrastructure.Customer.Persistance/   Customer DB, repositories, queries, migrations
+Infrastructure.Customer.Persistence/   Customer DB, repositories, queries, migrations
 Infrastructure.Security.Identity/      Identity DB, JWT, blacklist, seeding
 Customer.Bootstrap/               Customer DI and migrations
 Security.Bootstrap/               Identity, JWT, and authorization DI
-Applicatio.Freamwork/             Shared OperationResult and paging helpers
+Application.Framework/            Shared OperationResult and paging helpers
 ```
 
 Two SQL databases are used:
